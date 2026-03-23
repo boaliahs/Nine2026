@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Students Dashboard Class Nine (2026) </h3>
+    <div>
+      <button class="btn btn-success" onclick="goToAdd()" disabled>Add Student</button>
+      <button class="btn btn-danger" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Search & Filter -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <input type="text"
+             id="searchInput"
+             class="form-control"
+             placeholder="Search by Name or ID">
+    </div>
+
+    <div class="col-md-3">
+      <select id="groupFilter" class="form-select">
+        <option value="">All Groups</option>
+        <option value="Science">Science</option>
+        <option value="Humanities">Humanities</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card shadow">
+    <div class="card-body p-0">
+      <table class="table table-striped table-bordered mb-0">
+        <thead class="table-dark text-center">
+          <tr class="text-center align-middle">
+            <th>Sl</th>
+            <th>ID</th>
+            <th>New Roll</th>
+            <th>নাম <br> বাবার নাম <br> মায়ের নাম</th>
+            <th>Name <br> Father's Name <br> Mother's Name</th>
+            <th>Religion <br> Group <br> Fourth Subject</th>
+            <th>DOB <br> Phone</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="studentTable" class="text-center align-middle"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

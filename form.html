@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add / Update Student</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: #f4f6f9;
+    }
+    .card {
+      border-radius: 18px;
+    }
+    .section-title {
+      font-weight: 600;
+      color: #0d6efd;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container py-5">
+
+  <!-- Header -->
+  <div class="text-center mb-4">
+    <h2 class="fw-bold" id="formTitle">Add Student</h2>
+    <p class="text-muted">Fill in all required student information</p>
+  </div>
+
+  <div class="card shadow-lg border-0">
+    <div class="card-body p-4">
+
+      <form id="studentForm">
+
+        <!-- ================= Basic Info ================= -->
+        <h5 class="section-title mb-3">Basic Information</h5>
+        <div class="row g-3">
+
+          <div class="col-md-2">
+            <label class="form-label">Serial</label>
+            <input type="number" id="Sl" class="form-control" required>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Student ID</label>
+            <input type="text" id="ID" class="form-control" required>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Old Roll</label>
+            <input type="text" id="OldRoll" class="form-control">
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">New Roll</label>
+            <input type="text" id="NewRoll" class="form-control">
+          </div>
+
+        </div>
+
+
+        <!-- ================= Student Name ================= -->
+        <hr class="my-4">
+        <h5 class="section-title mb-3">Student Name</h5>
+
+        <div class="row g-3">
+
+          <div class="col-md-6">
+            <label class="form-label">Name (Bangla)</label>
+            <input type="text" id="NameInBangla" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Name (English)</label>
+            <input type="text" id="NameInEnglish" class="form-control">
+          </div>
+
+        </div>
+
+
+        <!-- ================= Parent Info ================= -->
+        <hr class="my-4">
+        <h5 class="section-title mb-3">Parent Information</h5>
+
+        <div class="row g-3">
+
+          <div class="col-md-6">
+            <label class="form-label">Father Name (Bangla)</label>
+            <input type="text" id="FathersNameBangla" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Father Name (English)</label>
+            <input type="text" id="FathersNameEnglish" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Mother Name (Bangla)</label>
+            <input type="text" id="MothersNameBangla" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Mother Name (English)</label>
+            <input type="text" id="MothersNameEnglish" class="form-control">
+          </div>
+
+        </div>
+
+
+        <!-- ================= Academic Info ================= -->
+        <hr class="my-4">
+        <h5 class="section-title mb-3">Academic Information</h5>
+
+        <div class="row g-3">
+
+          <div class="col-md-4">
+            <label class="form-label">Religion</label>
+            <select id="Religion" class="form-select">
+              <option value="">Select Religion</option>
+              <option>Islam</option>
+              <option>Hindu</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Date of Birth</label>
+            <input type="date" id="DOB" class="form-control">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Group</label>
+            <select id="Group" class="form-select">
+              <option value="">Select Group</option>
+              <option>Science</option>
+              <option>Humanities</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Fourth Subject</label>
+            <select id="FourthSubject" class="form-select">
+              <option value="">Select Fourth Subject</option>
+              <option>Higher Math</option>
+              <option>Agriculture</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Phone Number</label>
+            <input type="text" id="Phone" class="form-control">
+          </div>
+
+        </div>
+
+
+        <!-- ================= Buttons ================= -->
+        <hr class="my-4">
+
+        <div class="d-flex justify-content-end gap-3">
+          <button type="button"
+                  class="btn btn-outline-secondary px-4"
+                  onclick="goBack()">
+            Cancel
+          </button>
+
+          <button type="submit"
+                  class="btn btn-primary px-5">
+            Save Student
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,63 @@
+body {
+  font-family: Arial;
+  background: #f4f6f9;
+}
+
+.container, .form-container {
+  width: 80%;
+  margin: 30px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #ccc;
+}
+
+h1, h2 {
+  text-align: center;
+}
+
+button {
+  padding: 8px 15px;
+  margin: 5px;
+  border: none;
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+table, th, td {
+  border: 1px solid #ddd;
+}
+
+th, td {
+  padding: 10px;
+}
+
+/* td এর ভেতরের কন্টেন্ট সেন্টার করার জন্য */
+td {
+  height: 60px; /* আপনার প্রয়োজন অনুযায়ী */
+  display: table-cell; /* নিশ্চিত করুন এটি table-cell ই আছে */
+  vertical-align: middle;
+  text-align: center;
+}
+
+input, select {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0;
+}
+input[readonly] {
+  background-color: #f2f2f2;
+  cursor: not-allowed;
+}
