@@ -7,15 +7,37 @@ if (!localStorage.getItem("loggedIn") && location.pathname.includes("index")) {
 }
 
 // ================= LOGIN =================
-function login() {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+async function login(e) {
+    if (e) e.preventDefault(); // ফর্ম সাবমিট রিলোড বন্ধ করবে
+    
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
+    const btn = document.getElementById("loginBtn");
 
-    if (username === "admin" && password === "1234") {
-        localStorage.setItem("loggedIn", "true");
-        window.location.href = "index.html";
-    } else {
-        alert("Invalid Login");
+    btn.innerText = "Checking...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(API_URL + "?action=login", {
+            method: "POST",
+            body: JSON.stringify({ username: user, password: pass })
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            // টোকেনটি সেভ করে রাখছি (ভবিষ্যতে ডেটা ফিল্টার করার জন্য)
+            localStorage.setItem("loggedIn", "true");
+            localStorage.setItem("sessionToken", result.token); 
+            window.location.href = "index.html";
+        } else {
+            alert(result.message);
+        }
+    } catch (err) {
+        alert("সার্ভারের সাথে যোগাযোগ করা যাচ্ছে না!");
+        console.error(err);
+    } finally {
+        btn.innerText = "Login";
+        btn.disabled = false;
     }
 }
 
