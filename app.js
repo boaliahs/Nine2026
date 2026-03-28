@@ -8,7 +8,7 @@ if (!localStorage.getItem("loggedIn") && location.pathname.includes("index")) {
 
 // ================= LOGIN =================
 async function login(e) {
-    if (e) e.preventDefault(); // ফর্ম সাবমিট রিলোড বন্ধ করবে
+    if (e) e.preventDefault();
     
     const user = document.getElementById("username").value;
     const pass = document.getElementById("password").value;
@@ -22,19 +22,17 @@ async function login(e) {
             method: "POST",
             body: JSON.stringify({ username: user, password: pass })
         });
+        
         const result = await res.json();
 
         if (result.success) {
-            // টোকেনটি সেভ করে রাখছি (ভবিষ্যতে ডেটা ফিল্টার করার জন্য)
             localStorage.setItem("loggedIn", "true");
-            localStorage.setItem("sessionToken", result.token); 
-            window.location.href = "index.html";
+            window.location.href = "index.html"; // লগইন সফল হলে ড্যাশবোর্ডে যাবে
         } else {
             alert(result.message);
         }
     } catch (err) {
-        alert("সার্ভারের সাথে যোগাযোগ করা যাচ্ছে না!");
-        console.error(err);
+        alert("Failed to connect to server!");
     } finally {
         btn.innerText = "Login";
         btn.disabled = false;
