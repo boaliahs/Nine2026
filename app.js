@@ -1,18 +1,31 @@
+// ================= CONFIGURATION =================
 const API_URL = "https://script.google.com/macros/s/AKfycbzavFa087rlF20emsl7RrzTzNjhxS-tw9p3pSMeO3E0OFIwsxZ90BtSpUym1r1PxKVs4g/exec";
 
+// ================= 1. AUTHENTICATION CHECK =================
+// পেজ লোড হওয়ার সাথে সাথে চেক করবে ইউজার লগইন কি না
+(function authCheck() {
+    const isLoggedIn = localStorage.getItem("loggedIn");
+    const isLoginPage = window.location.pathname.includes("login.html");
 
-// ================= LOGIN CHECK =================
-if (!localStorage.getItem("loggedIn") && location.pathname.includes("index")) {
-    window.location.href = "login.html";
-}
+    if (!isLoggedIn && !isLoginPage) {
+        window.location.href = "login.html";
+    } else if (isLoggedIn && isLoginPage) {
+        window.location.href = "index.html";
+    }
+})();
 
-// ================= LOGIN =================
+// ================= 2. LOGIN & LOGOUT =================
 async function login(e) {
     if (e) e.preventDefault();
     
-    const user = document.getElementById("username").value;
-    const pass = document.getElementById("password").value;
+    const userField = document.getElementById("username");
+    const passField = document.getElementById("password");
     const btn = document.getElementById("loginBtn");
+
+    if (!userField || !passField) return;
+
+    const user = userField.value;
+    const pass = passField.value;
 
     btn.innerText = "Checking...";
     btn.disabled = true;
@@ -27,12 +40,13 @@ async function login(e) {
 
         if (result.success) {
             localStorage.setItem("loggedIn", "true");
-            window.location.href = "index.html"; // লগইন সফল হলে ড্যাশবোর্ডে যাবে
+            window.location.href = "index.html";
         } else {
-            alert(result.message);
+            alert(result.message || "Invalid Credentials");
         }
     } catch (err) {
-        alert("Failed to connect to server!");
+        alert("Server Error! Please try again.");
+        console.error(err);
     } finally {
         btn.innerText = "Login";
         btn.disabled = false;
@@ -41,30 +55,33 @@ async function login(e) {
 
 function logout() {
     localStorage.removeItem("loggedIn");
+    localStorage.removeItem("editData");
     window.location.href = "login.html";
 }
 
-
-// ================= GLOBAL STATE =================
+// ================= 3. GLOBAL STATE =================
 let allStudents = [];
 let currentSearch = "";
 let currentGroup = "";
 
-
-// ================= LOAD STUDENTS =================
+// ================= 4. DATA LOADING =================
 async function loadStudents() {
+    const tableBody = document.getElementById("studentTable");
+    if (!tableBody) return;
+
+    tableBody.innerHTML = `<tr><td colspan="8">Loading data...</td></tr>`;
+
     try {
         const res = await fetch(API_URL + "?action=read");
         allStudents = await res.json();
         applyFilters();
     } catch (err) {
-        alert("Failed to load data");
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-danger">Failed to load data</td></tr>`;
         console.error(err);
     }
 }
 
-
-// ================= DISPLAY TABLE =================
+// ================= 5. DISPLAY & FILTER =================
 function displayStudents(data) {
     const table = document.getElementById("studentTable");
     if (!table) return;
@@ -72,176 +89,133 @@ function displayStudents(data) {
     table.innerHTML = "";
 
     if (!data || data.length === 0) {
-        table.innerHTML = `<tr><td colspan="6">No Data Found</td></tr>`;
+        table.innerHTML = `<tr><td colspan="8">No Student Found</td></tr>`;
         return;
     }
 
     data.forEach(s => {
+        // Date formatting: DD-MM-YYYY
+        let formattedDate = "";
+        if (s.DOB) {
+            const d = new Date(s.DOB);
+            formattedDate = d.toLocaleDateString('en-GB').replace(/\//g, '-');
+        }
+
         table.innerHTML += `
-      <tr>
-        <td>${s.Sl || ""}</td>
-        <td>${s.ID || ""}</td>
-        <td>${s.NewRoll || ""}</td>
-        <td>${s.NameInBangla || ""} <br> ${s.FathersNameBangla || ""} <br> ${s.MothersNameBangla || ""}</td>
-        <td>${s.NameInEnglish || ""} <br> ${s.FathersNameEnglish || ""} <br> ${s.MothersNameEnglish || ""}</td>
-        <td>${s.Religion || ""} <br> ${s.Group || ""} <br> ${s.FourthSubject || ""}</td>
-        <td >${s.DOB ? new Date(s.DOB).toLocaleDateString('en-GB').replace(/\//g, '-') : ""} <br> ${s.Phone || ""}</td>
-        <td>
-          <button class="btn btn-sm btn-warning"
-            onclick='editStudent(${JSON.stringify(s)})'>
-            Edit
-          </button>
-        </td>
-      </tr>
-    `;
+            <tr>
+                <td>${s.Sl || ""}</td>
+                <td>${s.ID || ""}</td>
+                <td>${s.NewRoll || ""}</td>
+                <td class="text-start">${s.NameInBangla || ""}<br><small class="text-muted">${s.FathersNameBangla || ""}<br>${s.MothersNameBangla || ""}</small></td>
+                <td class="text-start">${s.NameInEnglish || ""}<br><small class="text-muted">${s.FathersNameEnglish || ""}<br>${s.MothersNameEnglish || ""}</small></td>
+                <td>${s.Religion || ""}<br>${s.Group || ""}<br>${s.FourthSubject || ""}</td>
+                <td>${formattedDate}<br>${s.Phone || ""}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning" onclick='editStudent(${JSON.stringify(s)})'>Edit</button>
+                </td>
+            </tr>
+        `;
     });
 }
 
-
-// ================= FILTER =================
 function applyFilters() {
-    let filtered = [...allStudents];
-
-    if (currentSearch) {
-        filtered = filtered.filter(s =>
-            String(s.NameInEnglish || "").toLowerCase().includes(currentSearch) ||
-            String(s.ID || "").toLowerCase().includes(currentSearch)
-        );
-    }
-
-    if (currentGroup) {
-        filtered = filtered.filter(s => s.Group === currentGroup);
-    }
-
+    let filtered = allStudents.filter(s => {
+        const nameMatch = String(s.NameInEnglish || "").toLowerCase().includes(currentSearch);
+        const idMatch = String(s.ID || "").toLowerCase().includes(currentSearch);
+        const groupMatch = currentGroup === "" || s.Group === currentGroup;
+        return (nameMatch || idMatch) && groupMatch;
+    });
     displayStudents(filtered);
 }
 
-
-// ================= DOM READY =================
-document.addEventListener("DOMContentLoaded", () => {
-
-    if (document.getElementById("studentTable")) {
-        loadStudents();
-    }
-
-    const searchBox = document.getElementById("searchInput");
-    if (searchBox) {
-        searchBox.addEventListener("input", function () {
-            currentSearch = this.value.toLowerCase();
-            applyFilters();
-        });
-    }
-
-    const groupBox = document.getElementById("groupFilter");
-    if (groupBox) {
-        groupBox.addEventListener("change", function () {
-            currentGroup = this.value;
-            applyFilters();
-        });
-    }
-
-    setupForm();
-});
-
-
-// ================= FORM SYSTEM =================
+// ================= 6. FORM SYSTEM (ADD/EDIT) =================
 function setupForm() {
-
     const form = document.getElementById("studentForm");
     if (!form) return;
 
     const editData = JSON.parse(localStorage.getItem("editData"));
+    const formTitle = document.getElementById("formTitle");
 
     if (editData) {
-        document.getElementById("formTitle").innerText = "Update Student";
-
+        if (formTitle) formTitle.innerText = "Update Student Information";
+        
+        // ফিল্ডগুলোতে ডেটা বসানো
         Object.keys(editData).forEach(key => {
             const field = document.getElementById(key);
-            if (!field) return;
-
-            if (key === "DOB" && editData[key]) {
-                // Convert to yyyy-mm-dd
-                const d = new Date(editData[key]);
-                const formatted =
-                    d.getFullYear() +
-                    "-" +
-                    String(d.getMonth() + 1).padStart(2, "0") +
-                    "-" +
-                    String(d.getDate()).padStart(2, "0");
-
-                field.value = formatted;
-            } else {
-                field.value = editData[key];
+            if (field) {
+                if (key === "DOB" && editData[key]) {
+                    field.value = new Date(editData[key]).toISOString().split('T')[0];
+                } else {
+                    field.value = editData[key];
+                }
             }
         });
-        document.getElementById("Sl").readOnly = true;
-        document.getElementById("ID").readOnly = true;
-        document.getElementById("OldRoll").readOnly = true;
-        document.getElementById("NewRoll").readOnly = true;
 
+        // ID এবং Roll সাধারণত এডিট করা যায় না
+        const readOnlyFields = ["Sl", "ID", "NewRoll"];
+        readOnlyFields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.readOnly = true;
+        });
     }
 
     form.addEventListener("submit", async function (e) {
         e.preventDefault();
+        const submitBtn = form.querySelector("button[type='submit']");
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Saving...";
 
         const action = editData ? "update" : "create";
-
-        const data = {
-            Sl: document.getElementById("Sl").value,
-            ID: document.getElementById("ID").value,
-            OldRoll: document.getElementById("OldRoll").value,
-            NewRoll: document.getElementById("NewRoll").value,
-            NameInBangla: document.getElementById("NameInBangla").value,
-            NameInEnglish: document.getElementById("NameInEnglish").value,
-            FathersNameBangla: document.getElementById("FathersNameBangla").value,
-            FathersNameEnglish: document.getElementById("FathersNameEnglish").value,
-            MothersNameBangla: document.getElementById("MothersNameBangla").value,
-            MothersNameEnglish: document.getElementById("MothersNameEnglish").value,
-            Religion: document.getElementById("Religion").value,
-            DOB: document.getElementById("DOB").value,
-            Group: document.getElementById("Group").value,
-            FourthSubject: document.getElementById("FourthSubject").value,
-            Phone: document.getElementById("Phone").value
-        };
+        const formData = {};
+        
+        // ফর্ম থেকে সব ডেটা অবজেক্টে নেওয়া
+        new FormData(form).forEach((value, key) => {
+            formData[key] = value;
+        });
 
         try {
-            // 🔥 CORS SAFE REQUEST (NO HEADERS)
             const res = await fetch(API_URL + "?action=" + action, {
                 method: "POST",
-                body: JSON.stringify(data)
+                body: JSON.stringify(formData)
             });
 
             const result = await res.json();
 
             if (result.success) {
-                alert(action === "create" ? "Student Added!" : "Student Updated!");
+                alert(action === "create" ? "Student Added Successfully!" : "Student Updated!");
                 localStorage.removeItem("editData");
                 window.location.href = "index.html";
             } else {
-                alert(result.message || "Something went wrong!");
+                alert("Error: " + result.message);
             }
-
         } catch (err) {
             alert("Failed to save data!");
-            console.error(err);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Save Student";
         }
-
     });
 }
 
+// ================= 7. NAVIGATION & EVENTS =================
+document.addEventListener("DOMContentLoaded", () => {
+    // ড্যাশবোর্ড লোড হলে
+    if (document.getElementById("studentTable")) {
+        loadStudents();
+        
+        document.getElementById("searchInput")?.addEventListener("input", (e) => {
+            currentSearch = e.target.value.toLowerCase();
+            applyFilters();
+        });
 
-// ================= NAVIGATION =================
-function goToAdd() {
-    localStorage.removeItem("editData");
-    window.location.href = "form.html";
-}
+        document.getElementById("groupFilter")?.addEventListener("change", (e) => {
+            currentGroup = e.target.value;
+            applyFilters();
+        });
+    }
 
-function editStudent(student) {
-    localStorage.setItem("editData", JSON.stringify(student));
-    window.location.href = "form.html";
-}
+    // লগইন পেজে থাকলে
+    document.getElementById("loginForm")?.addEventListener("submit", login);
 
-function goBack() {
-    localStorage.removeItem("editData");
-    window.location.href = "index.html";
-}
+    // ফর্ম পেজে থাকলে
+    setupForm();
