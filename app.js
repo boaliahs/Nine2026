@@ -2,7 +2,6 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzavFa087rlF20emsl7RrzTzNjhxS-tw9p3pSMeO3E0OFIwsxZ90BtSpUym1r1PxKVs4g/exec";
 
 // ================= 1. AUTHENTICATION CHECK =================
-// পেজ লোড হওয়ার সাথে সাথে চেক করবে ইউজার লগইন কি না
 (function authCheck() {
     const isLoggedIn = localStorage.getItem("loggedIn");
     const isLoginPage = window.location.pathname.includes("login.html");
@@ -22,7 +21,7 @@ async function login(e) {
     const passField = document.getElementById("password");
     const btn = document.getElementById("loginBtn");
 
-    if (!userField || !passField) return;
+    if (!userField || !passField || !btn) return;
 
     const user = userField.value;
     const pass = passField.value;
@@ -94,7 +93,6 @@ function displayStudents(data) {
     }
 
     data.forEach(s => {
-        // Date formatting: DD-MM-YYYY
         let formattedDate = "";
         if (s.DOB) {
             const d = new Date(s.DOB);
@@ -139,7 +137,6 @@ function setupForm() {
     if (editData) {
         if (formTitle) formTitle.innerText = "Update Student Information";
         
-        // ফিল্ডগুলোতে ডেটা বসানো
         Object.keys(editData).forEach(key => {
             const field = document.getElementById(key);
             if (field) {
@@ -151,7 +148,6 @@ function setupForm() {
             }
         });
 
-        // ID এবং Roll সাধারণত এডিট করা যায় না
         const readOnlyFields = ["Sl", "ID", "NewRoll"];
         readOnlyFields.forEach(id => {
             const el = document.getElementById(id);
@@ -168,10 +164,11 @@ function setupForm() {
         const action = editData ? "update" : "create";
         const formData = {};
         
-        // ফর্ম থেকে সব ডেটা অবজেক্টে নেওয়া
-        new FormData(form).forEach((value, key) => {
-            formData[key] = value;
-        });
+        const elements = form.elements;
+        for (let i = 0; i < elements.length; i++) {
+            const el = elements[i];
+            if (el.id) formData[el.id] = el.value;
+        }
 
         try {
             const res = await fetch(API_URL + "?action=" + action, {
@@ -199,7 +196,6 @@ function setupForm() {
 
 // ================= 7. NAVIGATION & EVENTS =================
 document.addEventListener("DOMContentLoaded", () => {
-    // ড্যাশবোর্ড লোড হলে
     if (document.getElementById("studentTable")) {
         loadStudents();
         
@@ -214,8 +210,25 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // লগইন পেজে থাকলে
-    document.getElementById("loginForm")?.addEventListener("submit", login);
+    const loginForm = document.getElementById("loginForm");
+    if (loginForm) {
+        loginForm.addEventListener("submit", login);
+    }
 
-    // ফর্ম পেজে থাকলে
     setupForm();
+});
+
+function goToAdd() {
+    localStorage.removeItem("editData");
+    window.location.href = "form.html";
+}
+
+function editStudent(student) {
+    localStorage.setItem("editData", JSON.stringify(student));
+    window.location.href = "form.html";
+}
+
+function goBack() {
+    localStorage.removeItem("editData");
+    window.location.href = "index.html";
+}
